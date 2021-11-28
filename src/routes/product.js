@@ -16,5 +16,14 @@ router.post('/create', [
 
 router.get('/all-products', productController.getAllProducts);
 router.get('/:productId', productController.getProductById);
+router.put('/:productId', [
+    body('productName')
+    .isLength({min: 5})
+    .withMessage('input productName tidak sesuai'),
+    body('productStory')
+    .isLength({min: 15})
+    .withMessage('input productStory tidak sesuai')],
+    productController.updateProduct)
+router.delete('/:productId', productController.deleteProduct);
 
 module.exports = router;
