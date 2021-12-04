@@ -2,10 +2,12 @@ const {validationResult} = require('express-validator');
 const path = require('path');
 const fs = require('fs');
 const Product = require('../models/product');
+const WhiteSchema = require('../models/white');
+const mongoose = require('mongoose');
 
 exports.createProduct = (req, res, next) => {
     const errors = validationResult(req);
-
+    
     if(!errors.isEmpty()){
         const err = new Error('Input value tidak sesuai');
         err.errorStatus = 400;
@@ -13,11 +15,11 @@ exports.createProduct = (req, res, next) => {
         throw err;
     }
 
-    if(!req.file){
-        const err = new Error('Image Harus Di Upload');
-        err.errorStatus = 422;
-        throw err;
-    }
+    // if(!req.file){
+    //     const err = new Error('Image Harus Di Upload');
+    //     err.errorStatus = 422;
+    //     throw err;
+    // }
 
     const productName = req.body.productName;
     const productType = req.body.productType;
@@ -28,11 +30,14 @@ exports.createProduct = (req, res, next) => {
     const productStory = req.body.productStory;
     const price = req.body.price;
     const stock = req.body.stock;
-    const productPhoto = req.file.path;
+    const productPhoto = req.body.productPhoto
+    // const productPhoto = req.file.path;
     const ecommerceLink = req.body.ecommerceLink;
+    const whites = req.body.white;
     // const author = req.body.author;
 
     const Create = new Product({
+        _id: new mongoose.Types.ObjectId(),
         productName: productName,
         productType: productType,
         blend: {origin: 'Gayo', postHarvest: 'Wet Hull', percentage: '70'},
@@ -44,21 +49,36 @@ exports.createProduct = (req, res, next) => {
         stock: stock,
         productPhoto: productPhoto,
         ecommerceLink: ecommerceLink,
-        author: {uid: 1, name: 'Khairunnisa'}
-    })
-
-    Create.save()
-    .then(result => {
-        res.status(201).json({
-            message: 'Create Product Success',
-            data: result
-        });
-    })
-    .catch(err => {
-        console.log('err: ', err);
+        author: {uid: 1, name: 'Khairunnisa'},
     });
-}
+    
+    Create.save(async function(err) {
+        if (err) return handleError(err);
+        whites.map(async function (white) {
+            let White = await new WhiteSchema({
+                title: white.title,
+                dose: white.dose,
+                yield: white.yield,
+                brewTime: white.brewTime,
+                temp: white.temp,
+                cappucino: white.cappucino,
+                latte: white.latte,
+                product: Create._id
+            });
+            White.save(async function(err) {
+                if(err) return handleError(err);
+                Create.white = await White._id;
+                Create.save();
+                res.status(200).send({
+                    message:"data created successfully",
+                    data: {White, Create}
+                })
+            });
+        })  
+    })
+    
 
+}
 exports.getAllProducts = (req, res, next) => {
     const currentPage = req.query.page || 1;
     const perPage = req.query.perPage || 3;
