@@ -44,7 +44,7 @@ exports.createProduct = (req, res, next) => {
         stock: stock,
         productPhoto: productPhoto,
         ecommerceLink: ecommerceLink,
-        author: {uid: 1, name: 'Khairunnisa'}
+        author: {uid: 1, name: 'admin1'}
     })
 
     Create.save()
