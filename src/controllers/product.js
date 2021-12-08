@@ -2,10 +2,11 @@ const {validationResult} = require('express-validator');
 const path = require('path');
 const fs = require('fs');
 const Product = require('../models/product');
-const WhiteSchema = require('../models/white');
+const Blend = require('../models/blend');
 const mongoose = require('mongoose');
+const white = require('../models/white');
 
-exports.createProduct = (req, res, next) => {
+exports.createProduct = async (req, res, next) => {
     const errors = validationResult(req);
     
     if(!errors.isEmpty()){
@@ -15,71 +16,70 @@ exports.createProduct = (req, res, next) => {
         throw err;
     }
 
-    // if(!req.file){
-    //     const err = new Error('Image Harus Di Upload');
-    //     err.errorStatus = 422;
-    //     throw err;
-    // }
+    if(!req.file){
+        const err = new Error('Image Harus Di Upload');
+        err.errorStatus = 422;
+        throw err;
+    }
 
     const productName = req.body.productName;
     const productType = req.body.productType;
     // const blend = req.body.blend;
-    // const origin = req.body.origin;
-    // const postHarvest = req.body.postHarvest;
-    // const percentage = req.body.percentage;
     const productStory = req.body.productStory;
     const price = req.body.price;
     const stock = req.body.stock;
-    const productPhoto = req.body.productPhoto
-    // const productPhoto = req.file.path;
+    const productPhoto = req.file.path.split(path.sep).join(path.posix.sep);
     const ecommerceLink = req.body.ecommerceLink;
-    const whites = req.body.white;
+    const size = req.body.size;
     // const author = req.body.author;
-
-    const Create = new Product({
-        _id: new mongoose.Types.ObjectId(),
-        productName: productName,
-        productType: productType,
-        blend: {origin: 'Gayo', postHarvest: 'Wet Hull', percentage: '70'},
-        // origin: origin,
-        // postHarvest: postHarvest,
-        // percentage: percentage,
+   
+    
+    Product.create({
+        _id : new mongoose.Types.ObjectId(),
+        productName : productName,
+        productType : productType,
         productStory: productStory,
+        productPhoto : productPhoto,
         price: price,
         stock: stock,
-        productPhoto: productPhoto,
+        size: size,
         ecommerceLink: ecommerceLink,
-        author: {uid: 1, name: 'Khairunnisa'},
-    });
-    
-    Create.save(async function(err) {
-        if (err) return handleError(err);
-        whites.map(async function (white) {
-            let White = await new WhiteSchema({
-                title: white.title,
-                dose: white.dose,
-                yield: white.yield,
-                brewTime: white.brewTime,
-                temp: white.temp,
-                cappucino: white.cappucino,
-                latte: white.latte,
-                product: Create._id
-            });
-            White.save(async function(err) {
-                if(err) return handleError(err);
-                Create.white = await White._id;
-                Create.save();
-                res.status(200).send({
-                    message:"data created successfully",
-                    data: {White, Create}
-                })
-            });
-        })  
+        author: {
+            name: "Junaedi"
+        }
+    }, function(err,result){
+        if(err) next(err);
+        res.status(200).json({
+            result
+        })
     })
-    
 
+    // Blend.create(blend, function(err, result) {
+    //     if(err) next(err);
+    //     console.log(result);
+    //     id = result.map(obj => mongoose.Types.ObjectId(obj._id));
+    //     console.log(id);
+    //     var Prod = new Product();
+    //     Prod._id = new mongoose.Types.ObjectId();
+    //     Prod.productName = productName;
+    //     Prod.productType = productType;
+    //     Prod.productStory = productStory;
+    //     Prod.price = price;
+    //     Prod.stock = stock;
+    //     Prod.productPhoto = productPhoto;
+    //     Prod.ecommerceLink = ecommerceLink;
+    //     Prod.author = {uid: 1, name: 'Khairunnisa'};
+    //     Prod.blend.push(id);
+    //     Product.save(function(err,result){
+    //         if(err) next(err);
+    //         res.status(200).json({
+    //             message:"berhasil cok",
+    //             data: result
+    //         })
+    //     })
+    // })
 }
-exports.getAllProducts = (req, res, next) => {
+exports.getAllProductsPagination = (req, res, next) => {
     const currentPage = req.query.page || 1;
     const perPage = req.query.perPage || 3;
     let totalItems;
@@ -106,23 +106,39 @@ exports.getAllProducts = (req, res, next) => {
     })
 }
 
+exports.getAllProduct = (req, res, next) => {
+    Product.find({})
+    .populate('productPhoto')
+    .populate('blend')
+    .populate('white')
+    .populate('black')
+    .exec(function(err, result) {
+        if(err)
+        { res.status(400).json({
+            message:"Finding product failed",
+            error: err
+        });
+        next(err);
+        }
+        res.status(200).json(result)
+    })
+}
+
 exports.getProductById = (req, res, next) => {
     const productId = req.params.productId;
     Product.findById(productId)
-    .then(result => {
-        if(!result) {
-            const error = new Error('Product tidak ditemukan');
-            error.errorStatus = 404;
-            throw error;
+    .populate("white")
+    .populate("black")
+    .exec((err,result) => {
+        if(err) {
+            res.status(400).json({
+                message:"Product not found",
+                error:err
+            })
+            next(err);
         }
-        res.status(200).json({
-            message: 'Product Berhasil Dipanggil',
-            data: result,
-        })
-    })
-    .catch(err => {
-        next(err);
-    })
+        res.status(200).json(result);
+    });
 }
 
 exports.updateProduct = (req, res, next) => {

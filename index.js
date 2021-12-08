@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const path = require('path');
-
+require('dotenv').config()
 const app = express();
 const authRoutes = require('./src/routes/auth');
 const productRoutes = require('./src/routes/product');
@@ -56,7 +56,7 @@ app.use((error, req, res, next) => {
     res.status(status).json({message: message, data: data});
 })
 
-mongoose.connect('mongodb+srv://root:Gyin4DstGnJsNE1j@sangraikopi.omjba.mongodb.net/dbSangrai?retryWrites=true&w=majority')
+mongoose.connect(process.env.MONGODB_URL)
 .then(() => {
     app.listen(4000, () => console.log('Connection Success'));
 })

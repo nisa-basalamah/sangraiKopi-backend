@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 // const toId = mongoose.Types.ObjectId;
 exports.createBlack = (req, res, next) => {
     const productId = req.params.productId;
-    const {title, dose, yield, brewTime, temp, americano} = req.body;
+    const {title, dose, yield, brewTime, temp, americano, batchdate} = req.body;
 
     Product.findById(productId, async function(err, product){
         let Black = new BlackScheme({
@@ -14,7 +14,8 @@ exports.createBlack = (req, res, next) => {
             brewTime: brewTime,
             temp: temp,
             americano: americano,
-            product: product._id
+            product: product._id,
+            batchdate: batchdate,
         });
         try{
         const proc = await Black.save();

@@ -30,7 +30,11 @@ const WhiteSchema = new Schema({
         type: Number,
         required: true
     },
-    product:{type: Schema.Types.ObjectId, ref:'Product'}
+    product:{type: Schema.Types.ObjectId, ref:'Product'},
+    batchdate:{
+        type: Date,
+        required: true
+    }
 })
 
 module.exports = mongoose.model('white', WhiteSchema )

@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const Product = new Schema({
+    _id: Schema.Types.ObjectId,
     productName: {
         type: String,
         required: true
@@ -38,9 +39,13 @@ const Product = new Schema({
         type: Number,
         required: true
     },
+    size: {
+        type: Number,
+        required: true
+    },
     productPhoto: {
         type: String,
-        required: true
+        require: true
     },
     ecommerceLink: {
         type: String,
@@ -49,7 +54,13 @@ const Product = new Schema({
     author: {
         type: Object,
         required: true
-    }
+    },
+    white:[{type: Schema.Types.ObjectId, ref: 'white'}],
+    black:[{type: Schema.Types.ObjectId, ref: 'black'}],
+    blend:[{
+        type: Schema.Types.ObjectId,
+        ref :'blend'
+    }]
 }, {
     timestamps: true
 });

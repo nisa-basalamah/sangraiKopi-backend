@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 // const toId = mongoose.Types.ObjectId;
 exports.createWhite = (req, res, next) => {
     const productId = req.params.productId;
-    const {title, dose, yield, brewTime, temp, cappucino, latte} = req.body;
+    const {title, dose, yield, brewTime, temp, cappucino, latte, batchdate} = req.body;
 
     Product.findById(productId, async function(err, product){
         let White = new WhiteScheme({
@@ -15,11 +15,12 @@ exports.createWhite = (req, res, next) => {
             temp: temp,
             cappucino: cappucino,
             latte:latte,
-            product: product._id
+            product: product._id,
+            batchdate: batchdate
         });
 
         await White.save(async function(err) {
-            if(err) return handleError(err);
+            if(err) next(err);
             product.white.push(White._id);
             await product.save();
             res.status(200).json({

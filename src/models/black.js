@@ -29,6 +29,10 @@ const BlackSchema = new Schema({
     product:{
         type: Schema.Types.ObjectId,
         ref: "Product"
+    },
+    batchdate:{
+        type: Date,
+        required: true
     }
 })
 
