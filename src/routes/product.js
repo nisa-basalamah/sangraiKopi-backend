@@ -14,7 +14,8 @@ router.post('/create', [
     .withMessage('input productStory tidak sesuai')],
     productController.createProduct);
 
-router.get('/all-products', productController.getAllProducts);
+router.get('/all-products-paged', productController.getAllProductsPagination);
+router.get('/allproduct', productController.getAllProduct);
 router.get('/:productId', productController.getProductById);
 router.put('/:productId', [
     body('productName')

@@ -2,10 +2,13 @@ const {validationResult} = require('express-validator');
 const path = require('path');
 const fs = require('fs');
 const Product = require('../models/product');
+const Blend = require('../models/blend');
+const mongoose = require('mongoose');
+const white = require('../models/white');
 
-exports.createProduct = (req, res, next) => {
+exports.createProduct = async (req, res, next) => {
     const errors = validationResult(req);
-
+    
     if(!errors.isEmpty()){
         const err = new Error('Input value tidak sesuai');
         err.errorStatus = 400;
@@ -22,44 +25,61 @@ exports.createProduct = (req, res, next) => {
     const productName = req.body.productName;
     const productType = req.body.productType;
     // const blend = req.body.blend;
-    // const origin = req.body.origin;
-    // const postHarvest = req.body.postHarvest;
-    // const percentage = req.body.percentage;
     const productStory = req.body.productStory;
     const price = req.body.price;
     const stock = req.body.stock;
-    const productPhoto = req.file.path;
+    const productPhoto = req.file.path.split(path.sep).join(path.posix.sep);
     const ecommerceLink = req.body.ecommerceLink;
+    const size = req.body.size;
     // const author = req.body.author;
-
-    const Create = new Product({
-        productName: productName,
-        productType: productType,
-        blend: {origin: 'Gayo', postHarvest: 'Wet Hull', percentage: '70'},
-        // origin: origin,
-        // postHarvest: postHarvest,
-        // percentage: percentage,
+   
+    
+    Product.create({
+        _id : new mongoose.Types.ObjectId(),
+        productName : productName,
+        productType : productType,
         productStory: productStory,
+        productPhoto : productPhoto,
         price: price,
         stock: stock,
-        productPhoto: productPhoto,
+        size: size,
         ecommerceLink: ecommerceLink,
-        author: {uid: 1, name: 'admin1'}
+        author: {
+            name: "Junaedi"
+        }
+    }, function(err,result){
+        if(err) next(err);
+        res.status(200).json({
+            result
+        })
     })
 
-    Create.save()
-    .then(result => {
-        res.status(201).json({
-            message: 'Create Product Success',
-            data: result
-        });
-    })
-    .catch(err => {
-        console.log('err: ', err);
-    });
+    // Blend.create(blend, function(err, result) {
+    //     if(err) next(err);
+    //     console.log(result);
+    //     id = result.map(obj => mongoose.Types.ObjectId(obj._id));
+    //     console.log(id);
+    //     var Prod = new Product();
+    //     Prod._id = new mongoose.Types.ObjectId();
+    //     Prod.productName = productName;
+    //     Prod.productType = productType;
+    //     Prod.productStory = productStory;
+    //     Prod.price = price;
+    //     Prod.stock = stock;
+    //     Prod.productPhoto = productPhoto;
+    //     Prod.ecommerceLink = ecommerceLink;
+    //     Prod.author = {uid: 1, name: 'Khairunnisa'};
+    //     Prod.blend.push(id);
+    //     Product.save(function(err,result){
+    //         if(err) next(err);
+    //         res.status(200).json({
+    //             message:"berhasil cok",
+    //             data: result
+    //         })
+    //     })
+    // })
 }
-
-exports.getAllProducts = (req, res, next) => {
+exports.getAllProductsPagination = (req, res, next) => {
     const currentPage = req.query.page || 1;
     const perPage = req.query.perPage || 3;
     let totalItems;
@@ -86,23 +106,39 @@ exports.getAllProducts = (req, res, next) => {
     })
 }
 
+exports.getAllProduct = (req, res, next) => {
+    Product.find({})
+    .populate('productPhoto')
+    .populate('blend')
+    .populate('white')
+    .populate('black')
+    .exec(function(err, result) {
+        if(err)
+        { res.status(400).json({
+            message:"Finding product failed",
+            error: err
+        });
+        next(err);
+        }
+        res.status(200).json(result)
+    })
+}
+
 exports.getProductById = (req, res, next) => {
     const productId = req.params.productId;
     Product.findById(productId)
-    .then(result => {
-        if(!result) {
-            const error = new Error('Product tidak ditemukan');
-            error.errorStatus = 404;
-            throw error;
+    .populate("white")
+    .populate("black")
+    .exec((err,result) => {
+        if(err) {
+            res.status(400).json({
+                message:"Product not found",
+                error:err
+            })
+            next(err);
         }
-        res.status(200).json({
-            message: 'Product Berhasil Dipanggil',
-            data: result,
-        })
-    })
-    .catch(err => {
-        next(err);
-    })
+        res.status(200).json(result);
+    });
 }
 
 exports.updateProduct = (req, res, next) => {

@@ -3,10 +3,12 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const path = require('path');
-
+require('dotenv').config()
 const app = express();
 const authRoutes = require('./src/routes/auth');
 const productRoutes = require('./src/routes/product');
+const whiteRoutes = require('./src/routes/white');
+const blackRoutes = require('./src/routes/black')
 
 const fileStorage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -42,6 +44,9 @@ app.use((req, res, next) => {
 
 app.use('/auth', authRoutes);
 app.use('/product', productRoutes);
+app.use('/white', whiteRoutes);
+app.use('/black', blackRoutes);
+
 
 app.use((error, req, res, next) => {
     const status = error.errorStatus || 500;
@@ -51,7 +56,7 @@ app.use((error, req, res, next) => {
     res.status(status).json({message: message, data: data});
 })
 
-mongoose.connect('mongodb+srv://khairunnisa:duH92tvxAzJyoqg4@cluster0.xbvvs.mongodb.net/sangraikopiDatabase?retryWrites=true&w=majority')
+mongoose.connect(process.env.MONGODB_URL)
 .then(() => {
     app.listen(4000, () => console.log('Connection Success'));
 })
