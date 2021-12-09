@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 const path = require('path');
 const app = express();
+const cors = require('cors');
 
 const authRoutes = require('./src/routes/auth');
 const productRoutes = require('./src/routes/product');
@@ -62,7 +63,8 @@ app.use((error, req, res, next) => {
 app.listen(process.env.PORT || port, () => console.log('Connection Success'));
 
 mongoose.connect(process.env.MONGODB_URL)
-.then(() => {
+.then((db) => {
     console.log("berhasil cok")
+    db.close();
 })
 .catch(err => console.log(err));
