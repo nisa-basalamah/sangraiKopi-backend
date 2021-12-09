@@ -1,14 +1,17 @@
+require('dotenv').config()
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const path = require('path');
-require('dotenv').config()
 const app = express();
+
 const authRoutes = require('./src/routes/auth');
 const productRoutes = require('./src/routes/product');
 const whiteRoutes = require('./src/routes/white');
-const blackRoutes = require('./src/routes/black')
+const blackRoutes = require('./src/routes/black');
+const port = 5000;
 
 const fileStorage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -56,8 +59,10 @@ app.use((error, req, res, next) => {
     res.status(status).json({message: message, data: data});
 })
 
+app.listen(process.env.PORT || port, () => console.log('Connection Success'));
+
 mongoose.connect(process.env.MONGODB_URL)
 .then(() => {
-    app.listen(4000, () => console.log('Connection Success'));
+    console.log("berhasil cok")
 })
 .catch(err => console.log(err));
