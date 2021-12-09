@@ -62,7 +62,8 @@ app.use((error, req, res, next) => {
 
 app.listen(process.env.PORT, port, () => console.log('Connection Success'));
 
-mongoose.connect(process.env.MONGODB_URL)
+mongoose.connect(process.env.MONGODB_URL,
+    {useNewUrlParser: true})
 .then((db) => {
     console.log("berhasil cok")
     db.close();
