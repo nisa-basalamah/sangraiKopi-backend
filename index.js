@@ -12,7 +12,7 @@ const authRoutes = require('./src/routes/auth');
 const productRoutes = require('./src/routes/product');
 const whiteRoutes = require('./src/routes/white');
 const blackRoutes = require('./src/routes/black');
-const port = 5000;
+const port = '0.0.0.0';
 
 const fileStorage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -60,7 +60,7 @@ app.use((error, req, res, next) => {
     res.status(status).json({message: message, data: data});
 })
 
-app.listen(process.env.PORT || port, () => console.log('Connection Success'));
+app.listen(process.env.PORT, port, () => console.log('Connection Success'));
 
 mongoose.connect(process.env.MONGODB_URL)
 .then((db) => {
