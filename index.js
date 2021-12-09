@@ -66,6 +66,5 @@ mongoose.connect(process.env.MONGODB_URL,
     {useNewUrlParser: true})
 .then((db) => {
     console.log("berhasil cok")
-    db.close();
 })
 .catch(err => console.log(err));
